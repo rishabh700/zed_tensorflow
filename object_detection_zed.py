@@ -60,7 +60,7 @@ def capture_thread_func(svo_filepath=None):
     # Create a InitParameters object and set configuration parameters
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.RESOLUTION_HD720
-    init_params.camera_fps = 30
+    init_params.camera_fps = 60
     init_params.depth_mode = sl.DEPTH_MODE.DEPTH_MODE_PERFORMANCE
     init_params.coordinate_units = sl.UNIT.UNIT_METER
     init_params.svo_real_time_mode = False
@@ -141,7 +141,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                 x = statistics.median(x_vect)
                 y = statistics.median(y_vect)
                 z = statistics.median(z_vect)
-                
+
                 distance = math.sqrt(x * x + y * y + z * z)
 
                 display_str = display_str + " " + str('% 6.2f' % distance) + " m "
