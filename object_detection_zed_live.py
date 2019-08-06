@@ -60,7 +60,7 @@ def capture_thread_func(svo_filepath=None):
     # Create a InitParameters object and set configuration parameters
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.RESOLUTION_HD720
-    init_params.camera_fps = 30 #60
+    init_params.camera_fps = 30
     init_params.depth_mode = sl.DEPTH_MODE.DEPTH_MODE_PERFORMANCE
     init_params.coordinate_units = sl.UNIT.UNIT_METER
     init_params.svo_real_time_mode = False
@@ -141,7 +141,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                 x = statistics.median(x_vect)
                 y = statistics.median(y_vect)
                 z = statistics.median(z_vect)
-
+                
                 distance = math.sqrt(x * x + y * y + z * z)
 
                 display_str = display_str + " " + str('% 6.2f' % distance) + " m "
@@ -166,12 +166,9 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
 
 
 def main(args):
-
     svo_filepath = None
     if len(args) > 1:
         svo_filepath = args[1]
-
-
 
     # This main thread will run the object detection, the capture thread is loaded later
 
@@ -256,19 +253,8 @@ def main(args):
                     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
                     # Actual detection.
                     (boxes, scores, classes, num_detections) = sess.run(
-                        #already existed
                         [boxes, scores, classes, num_detections],
                         feed_dict={image_tensor: image_np_expanded})
-
-                    #added
-                    boxes = np.squeeze(boxes)
-                    scores = np.squeeze(scores)
-                    classes = np.squeeze(classes)
-
-                    indices = np.argwhere(classes == 1) #person has class 1
-                    boxes = np.squeeze(boxes[indices])
-                    scores = np.squeeze(scores[indices])
-                    classes = np.squeeze(classes[indices])
 
                     num_detections_ = num_detections.astype(int)[0]
 
@@ -280,29 +266,19 @@ def main(args):
                         np.squeeze(boxes),
                         np.squeeze(classes).astype(np.int32),
                         np.squeeze(scores),
-                        category_index
-                        )
-                    
+                        category_index)
+
                     cv2.imshow('ZED object detection', cv2.resize(image_np, (width, height)))
                     if cv2.waitKey(10) & 0xFF == ord('q'):
                         cv2.destroyAllWindows()
-                        break
                         exit_signal = True
                 else:
                     sleep(0.01)
 
             sess.close()
 
-            
-
     exit_signal = True
     capture_thread.join()
-
-    video_capture = cv2.VideoCapture('HD720_bidirectional_1.svo')
-
-   
-
-
 
 
 if __name__ == '__main__':
