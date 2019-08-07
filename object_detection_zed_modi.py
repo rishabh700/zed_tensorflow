@@ -9,9 +9,10 @@ import math
 import tarfile
 import os.path
 import csv
+
 from threading import Lock, Thread
 from time import sleep
-import time
+
 import cv2
 
 # ZED imports
@@ -23,7 +24,7 @@ sys.path.append('utils')
 from object_detection.utils import ops as utils_ops
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
-from tempfile import TemporaryFile
+
 
 def load_image_into_numpy_array(image):
     ar = image.get_data()
@@ -51,7 +52,6 @@ exit_signal = False
 new_data = False
 
 
-
 # ZED image capture thread function
 def capture_thread_func(svo_filepath=None):
     global image_np_global, depth_np_global, exit_signal, new_data
@@ -61,11 +61,10 @@ def capture_thread_func(svo_filepath=None):
     # Create a InitParameters object and set configuration parameters
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.RESOLUTION_HD720
-    init_params.camera_fps = 30 #60
+    init_params.camera_fps = 30
     init_params.depth_mode = sl.DEPTH_MODE.DEPTH_MODE_PERFORMANCE
     init_params.coordinate_units = sl.UNIT.UNIT_METER
     init_params.svo_real_time_mode = False
-
     if svo_filepath is not None:
         init_params.svo_input_filename = svo_filepath
 
@@ -80,8 +79,6 @@ def capture_thread_func(svo_filepath=None):
     image_mat = sl.Mat()
     depth_mat = sl.Mat()
     runtime_parameters = sl.RuntimeParameters()
-    # Find OpenCV version
-    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
     while not exit_signal:
         if zed.grab(runtime_parameters) == sl.ERROR_CODE.SUCCESS:
@@ -98,13 +95,10 @@ def capture_thread_func(svo_filepath=None):
     zed.close()
 
 
-
-
-
 def display_objects_distances(image_np, depth_np, num_detections, boxes_, classes_, scores_, category_index):
     box_to_display_str_map = collections.defaultdict(list)
     box_to_color_map = collections.defaultdict(str)
-    
+
     research_distance_box = 30
 
     for i in range(num_detections):
@@ -117,43 +111,18 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                 display_str = '{}%'.format(int(100 * scores_[i]))
             else:
                 display_str = '{}: {}%'.format(display_str, int(100 * scores_[i]))
-                
-                #print("scores of person", display_str)
+
             # Find object distance
-            
             ymin, xmin, ymax, xmax = box
-            
-            #box_to_list = []
-            #box_to_list = box_to_list.append(tuple(box))
-            coordinates_list = []
-            counter_for = 0
-            for each_box in box:
-                coordinates_list.append([each_box])
-                counter_for = counter_for + 1
-
-            return coordinates_list
-
-            save_box = np.savetxt("box.csv", coordinates_list, delimiter = ",")
-            
-            '''
-            with open('box.csv','w') as out:
-                try:
-                    csv_out=csv.writer(out)
-                    csv_out.writerow(['ymin','xmin','ymax','xmax'])
-                    for row in box_to_list:
-                        csv_out.write("%s\n" % row)
-                except Exception as e:
-                    retVal = {'status' : 'False', 'msg' : 'Python3 Exception : {}'.format(e)}
-                else:
-                    retVal = {'status' : 'True', 'msg' : 'download'}
-            '''
-            #print("box type", type(box_to_list))
             x_center = int(xmin * width + (xmax - xmin) * width * 0.5)
             y_center = int(ymin * height + (ymax - ymin) * height * 0.5)
             x_vect = []
             y_vect = []
             z_vect = []
 
+            
+            #box gives top left and bottom right coordinates
+        
             min_y_r = max(int(ymin * height), int(y_center - research_distance_box))
             min_x_r = max(int(xmin * width), int(x_center - research_distance_box))
             max_y_r = min(int(ymax * height), int(y_center + research_distance_box))
@@ -172,33 +141,29 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                         y_vect.append(depth_np[j_, i_, 1])
                         z_vect.append(z)
 
-
             if len(x_vect) > 0:
                 x = statistics.median(x_vect)
                 y = statistics.median(y_vect)
                 z = statistics.median(z_vect)
-
+                
                 distance = math.sqrt(x * x + y * y + z * z)
 
                 display_str = display_str + " " + str('% 6.2f' % distance) + " m "
-                distance_total = str('% 6.2f' % distance)
-                
-                distance_data = np.squeeze(distance_total)
-                #for each_box_value in box_data:
-
-                #print("distance of person", str('% 6.2f' % distance))
-
                 box_to_display_str_map[box].append(display_str)
                 box_to_color_map[box] = vis_util.STANDARD_COLORS[classes_[i] % len(vis_util.STANDARD_COLORS)]
 
-    #print("box type",box_data)
-        #save_box = np.savetxt("box.csv", box_data, delimiter = ",")
 
-    
-    
+                #save_box = np.savetxt("classes.csv", classes_[i], delimiter = ",")
+                #print(classes_.dtype)
+                #print(type(classes_))
+            
+
     for box, color in box_to_color_map.items():
         ymin, xmin, ymax, xmax = box
-
+        
+                
+            
+        
         vis_util.draw_bounding_box_on_image_array(
             image_np,
             ymin,
@@ -212,15 +177,23 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
 
     return image_np
 
-    
+def export_CSV(self, classes):
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H_%M_%S')
+    path = "C:\Object detection\GitHub\zed_tensorflow" + time + '_class.csv'
+
+    with open(path, 'wb') as write_file:
+        writer = csv.writer(write_file)
+
+        for predicted_class in zip(classes):
+            
+            writer.writerow(category_index[predicted_class]['name'])
+
+
 
 def main(args):
-
     svo_filepath = None
     if len(args) > 1:
         svo_filepath = args[1]
-
-
 
     # This main thread will run the object detection, the capture thread is loaded later
 
@@ -260,8 +233,7 @@ def main(args):
     capture_thread.start()
     # Shared resources
     global image_np_global, depth_np_global, new_data, exit_signal
-    
-    
+
     # Load a (frozen) Tensorflow model into memory.
     print("Loading model " + MODEL_NAME)
     detection_graph = tf.Graph()
@@ -304,14 +276,14 @@ def main(args):
                     scores = detection_graph.get_tensor_by_name('detection_scores:0')
                     classes = detection_graph.get_tensor_by_name('detection_classes:0')
                     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                    
                     # Actual detection.
                     (boxes, scores, classes, num_detections) = sess.run(
-                        #already existed
                         [boxes, scores, classes, num_detections],
                         feed_dict={image_tensor: image_np_expanded})
 
-                    #added
+                    num_detections_ = num_detections.astype(int)[0]
+
+					#added
                     boxes = np.squeeze(boxes)
                     scores = np.squeeze(scores)
                     classes = np.squeeze(classes)
@@ -321,10 +293,14 @@ def main(args):
                     scores = np.squeeze(scores[indices])
                     classes = np.squeeze(classes[indices])
 
-                    #print("boxes", boxes)
-                    #print("scores", scores)
-
-                    num_detections_ = num_detections.astype(int)[0]
+                    '''
+                    new_class =[]
+                    #squeezed_class = np.squeeze(classes).astype(np.int32)
+                    for i, cl in enumerate(classes):
+                        new_class.append(cl)
+                    np.savetxt("class.csv", new_class, delimiter=',')
+                    # over writes the data # saves a single entry
+                    '''
 
                     # Visualization of the results of a detection.
                     image_np = display_objects_distances(
@@ -334,25 +310,25 @@ def main(args):
                         np.squeeze(boxes),
                         np.squeeze(classes).astype(np.int32),
                         np.squeeze(scores),
-                        category_index
-                       )
-
-                    
+                        category_index)
 
                     cv2.imshow('ZED object detection', cv2.resize(image_np, (width, height)))
+                    
                     if cv2.waitKey(10) & 0xFF == ord('q'):
                         cv2.destroyAllWindows()
-                        break
                         exit_signal = True
                 else:
                     sleep(0.01)
 
             sess.close()
 
-
-
+    export_CSV(self, classes)
     exit_signal = True
     capture_thread.join()
+
+
+
+
 
 if __name__ == '__main__':
     main(sys.argv)
