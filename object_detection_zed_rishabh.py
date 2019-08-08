@@ -200,7 +200,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
             use_normalized_coordinates=True)
 
     return image_np
-
+'''
 def export_CSV(self, ymin_n, xmin_n, ymax_n, xmax_n):
     time = datetime.datetime.now().strftime('%Y-%m-%d %H_%M_%S')
     path = "C:\3D camera\Github\zed_tensorflow" + time + '_class.csv'
@@ -213,7 +213,7 @@ def export_CSV(self, ymin_n, xmin_n, ymax_n, xmax_n):
             if (scores > confidence):
                 print("ymin={}, xmin={}, ymax={}, xmax={}".format(ymin_n,xmin_n,ymax_n,xmax_n))
                 writer.writerow(ymin_n,xmin_n,ymax_n,xmax_n)
-
+'''
 
 
 def main(args):
@@ -317,12 +317,14 @@ def main(args):
                     indices = np.argwhere(classes == 1) #person has class 1
                     boxes = np.squeeze(boxes[indices])
                     scores = np.squeeze(scores[indices])
+
+
                     classes = np.squeeze(classes[indices])
 
                     # overwrites the data for each frame # saves a single entry
                     #unable to call the values outside the loop
                     new_boxes = []
-                    for  i, box in enumerate(np.squeeze(boxes)):
+                    for  i, box in enumerate(np.squeeze(boxes), ):
                         if(np.squeeze(scores)[i] > confidence):
                             new_boxes.append(box)
                     np.savetxt('yourfile_1.csv', new_boxes, delimiter=',')
