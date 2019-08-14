@@ -205,10 +205,8 @@ def export_CSV(self, ymin_n, xmin_n, ymax_n, xmax_n):
     time = datetime.datetime.now().strftime('%Y-%m-%d %H_%M_%S')
     path = "C:\3D camera\Github\zed_tensorflow" + time + '_class.csv'
     print(ymin_n, xmin_n, ymax_n, xmax_n)
-
     with open(path, 'wb') as write_file:
         writer = csv.writer(write_file)
-
         for scores in np.squeeze(scores):
             if (scores > confidence):
                 print("ymin={}, xmin={}, ymax={}, xmax={}".format(ymin_n,xmin_n,ymax_n,xmax_n))
