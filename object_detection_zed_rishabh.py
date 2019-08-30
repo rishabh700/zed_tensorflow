@@ -174,13 +174,14 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                 #save_box = np.savetxt("classes.csv", classes_[i], delimiter = ",")
                 #print(classes_.dtype)
                 #print(type(classes_))
-                #print(x,y,z) # -4.06,2.26, 0.86
-                #print(type(x)) # <class 'numpy.float64'>
-                #print(type(distance)) # <class 'float'>
-                #print(distance) # Provides distance of the object from the camera
+                print(x,y,z) # box1:-4.06,-2.48, 7.73
+                print(type(x)) # <class 'numpy.float64'>
+                print(type(distance)) # <class 'float'>
+                print(distance) # Provides distance of the object from the camera (box1: 9.33m)
 
                 #print(x_vect, y_vect, z_vect) #
                 #print(type(x_vect)) # <class 'list'>
+
 
 
     for box, color in box_to_color_map.items():
@@ -223,10 +224,10 @@ def main(args):
 
     # What model to download and load
     #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-    MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
+    #MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
     #MODEL_NAME = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
     #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-    #MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
+    MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
 
     # Path to frozen detection graph. This is the actual model that is used for the object detection.
     PATH_TO_FROZEN_GRAPH = 'data/' + MODEL_NAME + '/frozen_inference_graph.pb'
