@@ -62,9 +62,10 @@ def capture_thread_func(svo_filepath=None):
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.RESOLUTION_HD720
     init_params.camera_fps = 30
-    init_params.depth_mode = sl.DEPTH_MODE.DEPTH_MODE_PERFORMANCE
+    init_params.depth_mode = sl.DEPTH_MODE.DEPTH_MODE_PERFORMANCE # sl.DEPTH_MODE.DEPTH_MODE_ULTRA # Set the depth mode to ULTRA
     init_params.coordinate_units = sl.UNIT.UNIT_METER
     init_params.svo_real_time_mode = False
+    #init_params.
     if svo_filepath is not None:
         init_params.svo_input_filename = svo_filepath
 
@@ -87,6 +88,7 @@ def capture_thread_func(svo_filepath=None):
             lock.acquire()
             image_np_global = load_image_into_numpy_array(image_mat)
             depth_np_global = load_depth_into_numpy_array(depth_mat)
+
             new_data = True
             lock.release()
 
@@ -100,7 +102,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
     box_to_color_map = collections.defaultdict(str)
 
 #Defines the range/area to refer the depth data from the centre of the box(x_center,y_center).
-    research_distance_box =  5 #30
+    research_distance_box =  30 #30 5
 
     for i in range(num_detections):
         if scores_[i] > confidence:
@@ -133,7 +135,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
             #print(type(ymin))
             #print(ymin, xmin, ymax, xmax) #provides with raw box coordinates
             #print(type(x_center)) #<class 'int'>
-            #print(x_center,y_center ) #137,77 460,116 411,308
+            #print(x_center,y_center) #137,77 460,116 411,308
 
 
 
@@ -142,8 +144,8 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
             max_y_r = min(int(ymax * height), int(y_center + research_distance_box))
             max_x_r = min(int(xmax * width), int(x_center + research_distance_box))
 
-            #small box used to refer depth value
-            #print((min_y_r, min_x_r, max_y_r, max_x_r ))
+            #small box used to refer depth value. Can we draw this box ?
+            print((min_y_r, min_x_r, max_y_r, max_x_r ))
             #print(type(min_y_r)) #<class 'int'>
 
             if min_y_r < 0: min_y_r = 0
@@ -170,14 +172,21 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
                 box_to_display_str_map[box].append(display_str)
                 box_to_color_map[box] = vis_util.STANDARD_COLORS[classes_[i] % len(vis_util.STANDARD_COLORS)]
 
+                z_q1 = np.percentile(z_vect, [25])
+                x_q1 = np.percentile(x_vect, [25])
 
+                print(distance) # Provides distance of the object from the camera (box1: 9.33m)
+                #print (z_vect)
+                print (z_q1)
+                print (x_q1)
+                print (x_vect)
                 #save_box = np.savetxt("classes.csv", classes_[i], delimiter = ",")
                 #print(classes_.dtype)
                 #print(type(classes_))
                 print(x,y,z) # box1:-4.06,-2.48, 7.73
-                print(type(x)) # <class 'numpy.float64'>
-                print(type(distance)) # <class 'float'>
-                print(distance) # Provides distance of the object from the camera (box1: 9.33m)
+                #print(type(x)) # <class 'numpy.float64'>
+                #print(type(distance)) # <class 'float'>
+                
 
                 #print(x_vect, y_vect, z_vect) #
                 #print(type(x_vect)) # <class 'list'>
@@ -199,6 +208,7 @@ def display_objects_distances(image_np, depth_np, num_detections, boxes_, classe
             thickness=4,
             display_str_list=box_to_display_str_map[box],
             use_normalized_coordinates=True)
+        # (min_y_r, min_x_r, max_y_r, max_x_r)
 
     return image_np
 '''
@@ -224,10 +234,10 @@ def main(args):
 
     # What model to download and load
     #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-    #MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
+    MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
     #MODEL_NAME = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
     #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-    MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
+    #MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
 
     # Path to frozen detection graph. This is the actual model that is used for the object detection.
     PATH_TO_FROZEN_GRAPH = 'data/' + MODEL_NAME + '/frozen_inference_graph.pb'
